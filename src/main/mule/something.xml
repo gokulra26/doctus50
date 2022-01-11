@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a30fb40e-778d-4de8-a8da-6a37d9b20513" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="d6094e4f-99c8-49f3-8e32-1418a5116153" />
+	<flow name="somethingFlow" doc:id="157d60fb-5bf5-4b9b-bb91-b62548236f7a" >
+		<http:listener doc:name="Listener/GET/order" doc:id="b0a2161f-b223-4867-99cc-4a72be64290c" config-ref="HTTP_Listener_config" path="/order"/>
+		<set-payload value="Order01" doc:name="Order01" doc:id="7b25a275-a324-495d-90ed-20af7ecd1268" />
+		<set-variable value="#[attributes.queryParams.qty]" doc:name="Set Variable" doc:id="83c0eb1f-90d5-4104-8b6d-cb2a0965e5e7" variableName="quantity"/>
+		<http:request method="POST" doc:name="Request" doc:id="7cbb0ff0-f1a0-40f2-998b-4b31b3f40ab9" url="http://localhost:8081/child"/>
+		<logger level="INFO" doc:name="Logger" doc:id="35d288ff-bd2b-4b97-bf50-779f81feac7a" message='#[output application/json --- &#10;{&#10;	flow: "parent",&#10;	qtyAttribute: attributes.queryParams.qty,&#10;	quantityVar: vars.quantity,&#10;	payload: payload&#10;}]'/>
+	</flow>
+	<flow name="child" doc:id="9ee07258-f02f-41e6-8910-5ac15998e25c" >
+		<http:listener doc:name="Listener" doc:id="23b47370-5167-4a76-b1d9-4e6359f8709e" config-ref="HTTP_Listener_config" path="/child"/>
+		<logger level="INFO" doc:name="Logger" doc:id="fad1982b-5de0-4c16-8e5b-e793b74c4ab5" message='#[output application/json --- &#10;{&#10;	flow: "child",&#10;	qtyAttribute: attributes.queryParams.qty,&#10;	quantityVar: vars.quantity,&#10;	payload: payload&#10;}]'/>
+		<set-payload value="child flow finished" doc:name="child flow finished" doc:id="03f07187-506a-4618-92a0-3cc5147b5514" />
+	</flow>
+</mule>
